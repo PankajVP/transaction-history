@@ -7,18 +7,22 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvFileSource;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.moneyforward.transactionhistory.model.MonthlyStatement;
 import org.moneyforward.transactionhistory.model.Transaction;
+import org.moneyforward.transactionhistory.output.FileOutputStrategy;
+import org.moneyforward.transactionhistory.output.OutputStrategy;
+import org.moneyforward.transactionhistory.output.StandardOutputStrategy;
 import org.moneyforward.transactionhistory.service.TransactionService;
 import org.moneyforward.transactionhistory.util.CSVUtil;
 
+import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AppTest {
     private static List<Transaction> transactions;
@@ -95,4 +99,45 @@ public class AppTest {
                 Arguments.of("202203", 0)
         );
     }
+
+    @Test
+    @DisplayName("Test Output to Console")
+    void testOutputToConsole() throws Exception {
+        OutputStrategy outputStrategy = new StandardOutputStrategy();
+        MonthlyStatement statement = new MonthlyStatement("202201", BigDecimal.valueOf(350.00), BigDecimal.valueOf(-150.00), transactions);
+        outputStrategy.output(statement.toString());
+    }
+
+    @Test
+    @DisplayName("Test Output to File")
+    void testOutputToFile() throws Exception {
+        String filePath = "output.json";
+        OutputStrategy outputStrategy = new FileOutputStrategy(filePath);
+        MonthlyStatement statement = new MonthlyStatement("202201", BigDecimal.valueOf(350.00), BigDecimal.valueOf(-150.00), transactions);
+        outputStrategy.output(statement.toString());
+
+        // Verify the file output
+        File file = new File(filePath);
+        assertTrue(file.exists(), "Output file should exist");
+
+        // Clean up the output file
+        file.delete();
+    }
+
+    @Test
+    @DisplayName("Test FileOutputStrategy")
+    void testFileOutputStrategy() throws Exception {
+        String filePath = "output.json";
+        OutputStrategy outputStrategy = new FileOutputStrategy(filePath);
+        MonthlyStatement statement = new MonthlyStatement("202201", BigDecimal.valueOf(350.00), BigDecimal.valueOf(-150.00), transactions);
+        outputStrategy.output(statement.toString());
+
+        // Verify the file output
+        File file = new File(filePath);
+        assertTrue(file.exists(), "Output file should exist");
+
+        // Clean up the output file
+        file.delete();
+    }
+
 }
