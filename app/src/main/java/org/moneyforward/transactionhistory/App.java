@@ -45,7 +45,10 @@ public class App {
     }
 
     private static BigDecimal getTotalIncome(List<Transaction> filteredTransactions) {
-        return BigDecimal.ZERO;
+        return filteredTransactions.stream()
+                .filter(t -> t.getAmount().compareTo(BigDecimal.ZERO) > 0)
+                .map(Transaction::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     private static BigDecimal getTotalExpenditure(List<Transaction> filteredTransactions) {
