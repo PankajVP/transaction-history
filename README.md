@@ -72,13 +72,13 @@ The Financial Transaction History application is a command-line tool designed fo
    ./gradlew run --args="202201 /Users/pankaj/Desktop/transactions.csv /Users/pankaj/Desktop/output.json"
   ```
 ### Execution Sreenshots
-- Build:
+#### Build:
 ![Build](screenshots/build.png "Build")
 
-- Output to console:
+#### Output to console:
 ![Build](screenshots/output-to-console.png "Output to Console")
 
-- Output to a JSON file:
+#### Output to a JSON file:
 ![Build](screenshots/output-to-file.png "Output to File")
 
 
