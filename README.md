@@ -41,10 +41,7 @@ The Financial Transaction History application is a command-line tool designed fo
    ./gradlew build
    ```
 
-3. Test the project using Gradle:
-   ```sh
-   ./gradlew test
-   ```
+
 
 ### Usage
 
@@ -82,8 +79,22 @@ The Financial Transaction History application is a command-line tool designed fo
 ![Build](screenshots/output-to-file.png "Output to File")
 
 
+
+## Code Quality
+
 ### Code Coverage [95%]
 ![Code Coverage](screenshots/code-coverage.png "Code Coverage")
+
+
+### Run UTs 
+Test the project using Gradle:
+   ```sh
+   ./gradlew test
+   ```
+   
+### Test Case Documentation
+[test-suite](app_test_cases.md)
+
 
 ### CSV File Format
 

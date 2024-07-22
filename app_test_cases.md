@@ -1,22 +1,34 @@
-| Test Case                                | Description                                                                                  | Input                                                | Expected Output                                             |
-|------------------------------------------|----------------------------------------------------------------------------------------------|------------------------------------------------------|-------------------------------------------------------------|
-| **testGetTotalIncome**                   | Tests the calculation of total income for a given period                                     | Transactions for January 2022                        | Total income should be 350.00                               |
-| **testGetTotalExpenditure**              | Tests the calculation of total expenditure for a given period                                | Transactions for January 2022                        | Total expenditure should be -150.00                         |
-| **testFilterTransactions**               | Tests filtering transactions for a specific month                                            | Transactions list and period "202201"                | 5 transactions for January 2022                             |
-| **testFilterTransactionsNoMatch**        | Tests filtering transactions with no matches for a given period                              | Transactions list and period "202203"                | 0 transactions for March 2022                               |
-| **testEmptyTransactions**                | Tests total income and expenditure calculation with no transactions                          | Empty transactions list                              | Total income and expenditure should be 0.00                 |
-| **testParseCSV**                         | Tests parsing the CSV file                                                                   | CSV file "transactions_test.csv"                     | Parsed transactions should contain the expected transaction |
-| **testFilterTransactionsWithDifferentPeriods** | Tests filtering transactions for different periods                                           | Transactions list and various periods                | Correct number of transactions for each period              |
-| **testGetTotalIncomeFeb2022**            | Tests the calculation of total income for February 2022                                      | Transactions for February 2022                       | Total income should be 200.00                               |
-| **testGetTotalExpenditureFeb2022**       | Tests the calculation of total expenditure for February 2022                                 | Transactions for February 2022                       | Total expenditure should be -100.00                         |
-| **testGetTotalIncomeNoTransactions**     | Tests the calculation of total income with no transactions                                   | Empty transactions list                              | Total income should be 0.00                                 |
-| **testGetTotalExpenditureNoTransactions**| Tests the calculation of total expenditure with no transactions                              | Empty transactions list                              | Total expenditure should be 0.00                             |
-| **testParseCSVInvalidFormat**            | Tests parsing the CSV file with invalid format                                               | CSV file with invalid format                         | Should throw an exception                                   |
-| **testParseCSVEmptyFile**                | Tests parsing an empty CSV file                                                              | Empty CSV file                                       | Should return an empty transactions list                    |
-| **testFilterTransactionsInvalidPeriod**  | Tests filtering transactions with an invalid period                                          | Transactions list and invalid period                 | Should return an empty transactions list                    |
-| **testFilterTransactionsFuturePeriod**   | Tests filtering transactions for a future period                                             | Transactions list and a future period (e.g., 202301) | Should return an empty transactions list                    |
-| **testParseCSVWithDifferentDelimiter**   | Tests parsing the CSV file with a different delimiter                                        | CSV file with a different delimiter (e.g., semicolon)| Should correctly parse the transactions                     |
-| **testGetTotalIncomeAndExpenditureMixed**| Tests the calculation of both total income and expenditure for a period with mixed transactions| Transactions for a period with mixed transactions    | Correct total income and expenditure                        |
-| **testOutputToConsole**                  | Tests the output strategy to console                                                         | Transactions list and period "202201"                | Correct JSON output printed to console                      |
-| **testOutputToFile**                     | Tests the output strategy to file                                                            | Transactions list, period "202201", and file path    | Correct JSON output written to the specified file           |
-| **testFileOutputStrategy**               | Tests the FileOutputStrategy class implementation                                            | Transactions list, period "202201", and file path    | Correct JSON output written to the specified file           |
+# Test Case Documentation
+
+## TransactionServiceTest
+
+| Test Method                          | Description                                                                                         | Expected Result                                                    |
+|--------------------------------------|-----------------------------------------------------------------------------------------------------|--------------------------------------------------------------------|
+| `testFilterTransactions_yearMonth()` | Tests the filtering of transactions for a specific year and month ("202307").                       | Returns 2 transactions dated "2023/07/02" and "2023/07/01".        |
+| `testFilterTransactions_year()`      | Tests the filtering of transactions for a specific year ("2023").                                   | Returns 3 transactions dated "2023/07/02", "2023/07/01", "2023/06/30". |
+| `testFilterTransactions_empty()`     | Tests the filtering of transactions for a period with no transactions ("202201").                   | Returns an empty list.                                             |
+| `testFilterTransactions_invalidPeriod()` | Tests the filtering of transactions with an invalid period ("invalid").                            | Returns an empty list.                                             |
+
+## CSVUtilTest
+
+| Test Method                | Description                                                                             | Expected Result                                                                                         |
+|----------------------------|-----------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------|
+| `testParseCSV_success()`   | Tests parsing a valid CSV file.                                                          | Returns a list of transactions with the correct data.                                                   |
+| `testParseCSV_fileNotFound()` | Tests parsing a CSV file that does not exist.                                           | Throws an IOException with a message containing "File not found".                                       |
+| `testParseCSV_fromResources()` | Tests parsing a CSV file from resources.                                               | Returns a list of transactions with the correct data.                                                   |
+
+## AppTest
+
+| Test Method                          | Description                                                                                         | Expected Result                                                    |
+|--------------------------------------|-----------------------------------------------------------------------------------------------------|--------------------------------------------------------------------|
+| `testMain()`                         | Tests the main method of the App with valid arguments.                                              | Runs without exceptions.                                           |
+| `testMainFileOutput()`               | Tests the main method of the App with file output arguments.                                        | Generates an output file "output.json".                            |
+| `testRun()`                          | Tests the run method of the App with valid arguments.                                               | Runs without exceptions.                                           |
+| `testException()`                    | Tests the main method of the App when an exception occurs during CSV parsing.                       | Verifies the output strategy is not executed.                      |
+| `testExceptionArgs()`                | Tests the main method of the App with insufficient CLI arguments.                                   | Throws an IllegalArgumentException.                                |
+| `testGetTotalIncome()`               | Tests the calculation of total income from filtered transactions.                                   | Returns the correct total income for January 2022 (350.00).        |
+| `testGetTotalExpenditure()`          | Tests the calculation of total expenditure from filtered transactions.                              | Returns the correct total expenditure for January 2022 (-150.00).  |
+| `testEmptyTransactions()`            | Tests the calculation of total income and expenditure with no transactions.                         | Returns 0.00 for both income and expenditure.                      |
+| `testOutputToConsole()`              | Tests output to console using `StandardOutputStrategy`.                                             | Outputs the statement to the console.                              |
+| `testOutputToFile()`                 | Tests output to file using `FileOutputStrategy`.                                                    | Generates an output file "output.json".                            |
+| `testFileOutputStrategy()`           | Tests the `FileOutputStrategy` independently.                                                       | Generates an output file "output.json".                            |
