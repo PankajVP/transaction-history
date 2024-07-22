@@ -14,10 +14,10 @@ The Financial Transaction History application is a command-line tool designed fo
 - Output the results in JSON format to the console or to a file
 
 ## Assumptions
-1. Assignment Statement:Create a program designed for personal use that generates a history of all deposits and withdrawals for a specified month
-Assumption: Since this is the personal use program, multi-threading features takes back-seat and simplicity and readability is more important. So, i tried to keep code as simple and readable as possible.
-2. Assignment Statement: Create a program designed for personal
-Assumption: since it's a single person usage app, i'm assuming that the person will be the maintainer(thus will have access to the codebase),
+1. - Assignment Statement:Create a program designed for personal use that generates a history of all deposits and withdrawals for a specified month
+   - Assumption: Since this is the personal use program, multi-threading features takes back-seat and simplicity and readability is more important. So, i tried to keep code as simple and readable as possible.
+2. - Assignment Statement: Create a program designed for personal
+   - Assumption: since it's a single person usage app, i'm assuming that the person will be the maintainer(thus will have access to the codebase),
  so I have given the gradle commands below instead of the jar commands(which is pretty simple to do so if required as I already added the jar task in gradle DSL)
 
 
