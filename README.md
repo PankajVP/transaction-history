@@ -37,11 +37,11 @@ The Financial Transaction History application is a command-line tool designed fo
 
 1. Run the program with the required arguments:
    ```sh
-   java -jar app/build/libs/app.jar <YYYYMM> <CSV_FILE_PATH> [OUTPUT_FILE_PATH]
+    ./gradlew run --args="<YYYYMM> <CSV_FILE_PATH> [OUTPUT_FILE_PATH]"
    ```
    Example:
    ```sh
-   java -jar app/build/libs/app.jar <YYYYMM> <CSV_FILE_PATH> [OUTPUT_FILE_PATH]
+    ./gradlew run --args="<YYYYMM> <CSV_FILE_PATH> [OUTPUT_FILE_PATH]"
    ```
     - `<YYYYMM>`: The month for which to generate the transaction history (e.g., `202201` for January 2022).
     - `<CSV_FILE_PATH>`: The path to the CSV file containing transaction data.
@@ -51,13 +51,26 @@ The Financial Transaction History application is a command-line tool designed fo
 
 - Output to console:
   ```sh
-  java -jar build/libs/app.jar 202201 /path/to/transactions.csv
+  ./gradlew run --args="202201 /Users/pankaj/Desktop/transactions.csv"
   ```
 
 - Output to a JSON file:
   ```sh
-  java -jar app/build/libs/app.jar 202201 /path/to/transactions.csv /path/to/output.json
+   ./gradlew run --args="202201 /Users/pankaj/Desktop/transactions.csv /Users/pankaj/Desktop/output.json"
   ```
+### Execution Sreenshots
+- Build:
+![Build](screenshots/build.png "Build")
+
+- Output to console:
+![Build](screenshots/output-to-console.png "Output to Console")
+
+- Output to a JSON file:
+![Build](screenshots/output-to-file.png "Output to File")
+
+
+### Code Coverage [95%]
+![Code Coverage](screenshots/code-coverage.png "Code Coverage")
 
 ### CSV File Format
 
