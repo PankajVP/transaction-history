@@ -8,20 +8,25 @@ import org.moneyforward.transactionhistory.model.Transaction;
 import org.moneyforward.transactionhistory.output.FileOutputStrategy;
 import org.moneyforward.transactionhistory.output.OutputStrategy;
 import org.moneyforward.transactionhistory.output.StandardOutputStrategy;
+import org.moneyforward.transactionhistory.service.TransactionService;
+import org.moneyforward.transactionhistory.util.CSVUtil;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-import static org.moneyforward.transactionhistory.service.TransactionService.filterTransactions;
-import static org.moneyforward.transactionhistory.util.CSVUtil.parseCSV;
-
 @Slf4j
 public class App {
+    private final CSVUtil csvUtil;
+    private final TransactionService transactionService;
+
+    public App(CSVUtil csvUtil, TransactionService transactionService) {
+        this.csvUtil = csvUtil;
+        this.transactionService = transactionService;
+    }
     public static void main(String[] args) {
         if (args.length < 2 || args.length > 3) {
-            log.error("Please pass the correct number of command line arguments!");
-            log.error("Usage: java FinancialHistory <YYYYMM> <CSV_FILE_PATH> [OUTPUT_FILE_PATH]");
-            System.exit(1);
+            System.out.println("Please pass the correct number of command line arguments!\n Usage: java FinancialHistory <YYYYMM> <CSV_FILE_PATH> [OUTPUT_FILE_PATH]");
+            throw new IllegalArgumentException("Please pass the correct number of command line arguments!");
         }
 
         String period = args[0];
@@ -34,10 +39,17 @@ public class App {
         } else {
             outputStrategy = new StandardOutputStrategy();
         }
+        CSVUtil csvUtil = new CSVUtil();
+        TransactionService transactionService = new TransactionService();
+        App app = new App(csvUtil, transactionService);
 
+        app.run(period, csvFilePath, outputStrategy);
+    }
+
+    public void run(String period, String csvFilePath, OutputStrategy outputStrategy) {
         try {
-            List<Transaction> transactions = parseCSV(csvFilePath);
-            List<Transaction> filteredTransactions = filterTransactions(transactions, period);
+            List<Transaction> transactions = csvUtil.parseCSV(csvFilePath);
+            List<Transaction> filteredTransactions = transactionService.filterTransactions(transactions, period);
 
             BigDecimal totalIncome = getTotalIncome(filteredTransactions);
 
@@ -50,23 +62,22 @@ public class App {
 
             outputStrategy.output(jsonOutput);
         } catch (Exception e) {
-            log.error("Error: " + e.getMessage(), e);
+            System.out.println("Error: " + e.getMessage());
             System.exit(1);
         }
     }
 
-    private static BigDecimal getTotalIncome(List<Transaction> filteredTransactions) {
+    static BigDecimal getTotalIncome(List<Transaction> filteredTransactions) {
         return filteredTransactions.stream()
-                .filter(t -> t.getAmount().compareTo(BigDecimal.ZERO) > 0)
                 .map(Transaction::getAmount)
+                .filter(amount -> amount.compareTo(BigDecimal.ZERO) > 0)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    private static BigDecimal getTotalExpenditure(List<Transaction> filteredTransactions) {
-        BigDecimal totalExpenditure = filteredTransactions.stream()
-                .filter(t -> t.getAmount().compareTo(BigDecimal.ZERO) < 0)
+    static BigDecimal getTotalExpenditure(List<Transaction> filteredTransactions) {
+        return filteredTransactions.stream()
                 .map(Transaction::getAmount)
+                .filter(amount -> amount.compareTo(BigDecimal.ZERO) < 0)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        return totalExpenditure;
     }
 }

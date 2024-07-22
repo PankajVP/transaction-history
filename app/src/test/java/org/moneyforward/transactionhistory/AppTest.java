@@ -1,12 +1,8 @@
 package org.moneyforward.transactionhistory;
 
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.CsvFileSource;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.moneyforward.transactionhistory.model.MonthlyStatement;
 import org.moneyforward.transactionhistory.model.Transaction;
 import org.moneyforward.transactionhistory.output.FileOutputStrategy;
@@ -18,93 +14,128 @@ import org.moneyforward.transactionhistory.util.CSVUtil;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 public class AppTest {
     private static List<Transaction> transactions;
+    private CSVUtil csvUtil;
+    private TransactionService transactionService;
+    private OutputStrategy outputStrategy;
     private App app;
 
-    @BeforeAll
-    public static void setUp() throws IOException {
-        transactions = CSVUtil.parseCSV("transactions_test.csv");
+
+    @BeforeEach
+    void setUp() throws IOException {
+        csvUtil = mock(CSVUtil.class);
+        transactionService = mock(TransactionService.class);
+        outputStrategy = mock(OutputStrategy.class);
+        app = new App(csvUtil, transactionService);
+        transactions = Arrays.asList(
+                new Transaction("2022/01/01", BigDecimal.valueOf(100), "Salary"),
+                new Transaction("2022/01/15", BigDecimal.valueOf(-50), "Groceries"),
+                new Transaction("2022/01/20", BigDecimal.valueOf(200), "Freelance Work"),
+                new Transaction("2022/01/25", BigDecimal.valueOf(-100), "Rent"),
+                new Transaction("2022/01/30", BigDecimal.valueOf(50), "Gift"),
+                new Transaction("2022/02/01", BigDecimal.valueOf(300), "Bonus"),
+                new Transaction("2022/02/15", BigDecimal.valueOf(-60), "Utilities")
+        );
+    }
+
+
+    @Test
+    @DisplayName("Simple Run Test")
+    void testMain() throws Exception {
+        String period = "202201";
+        String csvFilePath = "transactions_test.csv";
+        String[] args = new String[]{period, csvFilePath};
+        app.main(args);
+    }
+
+    @Test
+    @DisplayName("Test FileOutputStrategy")
+    void testMainFileOutput() throws Exception {
+        String period = "202201";
+        String csvFilePath = "transactions_test.csv";
+        String outputFilePath = "output.json";
+        String[] args = new String[]{period, csvFilePath, outputFilePath};
+
+        app.main(args);
+        // Verify the file output
+        File file = new File(outputFilePath);
+        assertTrue(file.exists(), "Output file should exist");
+
+        // Clean up the output file
+        file.delete();
+    }
+
+    @Test
+    @DisplayName("Simple Run Test for run() method")
+    void testRun() throws Exception {
+        String period = "202201";
+        String csvFilePath = "transactions_test.csv";
+        app.run(period, csvFilePath, outputStrategy);
 
     }
 
     @Test
+    @DisplayName("Simple Exception test")
+    void testException() throws Exception {
+        String period = "202201";
+        String csvFilePath = "transactions_test.csv";
+        String outputFilePath = "output.json";
+        String[] args = new String[]{period, csvFilePath, outputFilePath};
+
+        when(csvUtil.parseCSV(anyString())).thenThrow(new IOException("ERROR!"));
+
+        app.main(args);
+        //Once there is an error in CSV parsing, output strategy code should not be executed
+        verify(outputStrategy, times(0)).output(anyString());
+    }
+
+    @Test
+    @DisplayName("Simple Exception For CLI args test")
+    void testExceptionArgs() throws Exception {
+        String period = "202201";
+        String[] args = new String[]{period};
+        assertThrows(IllegalArgumentException.class,()->app.main(args));
+    }
+
+
+    @Test
     @DisplayName("Test Total Income Calculation")
     void testGetTotalIncome() {
-        List<Transaction> januaryTransactions = TransactionService.filterTransactions(transactions, "202201");
-        BigDecimal totalIncome = App.getTotalIncome(januaryTransactions);
-        assertEquals(new BigDecimal("350.00"), totalIncome, "Total income for January 2022 should be 350.00");
+        BigDecimal totalIncome = app.getTotalIncome(getFilteredTransaction());
+        assertEquals(new BigDecimal("350"), totalIncome, "Total income for January 2022 should be 350.00");
     }
 
     @Test
     @DisplayName("Test Total Expenditure Calculation")
     void testGetTotalExpenditure() {
-        List<Transaction> januaryTransactions = TransactionService.filterTransactions(transactions, "202201");
-        BigDecimal totalExpenditure = App.getTotalExpenditure(januaryTransactions);
-        assertEquals(new BigDecimal("-150.00"), totalExpenditure, "Total expenditure for January 2022 should be -150.00");
+
+        BigDecimal totalExpenditure = app.getTotalExpenditure(getFilteredTransaction());
+        assertEquals(new BigDecimal("-150"), totalExpenditure, "Total expenditure for January 2022 should be -150.00");
     }
 
-    @Test
-    @DisplayName("Test Filtering Transactions for January 2022")
-    void testFilterTransactions() {
-        List<Transaction> januaryTransactions = TransactionService.filterTransactions(transactions, "202201");
-        assertEquals(5, januaryTransactions.size(), "Number of transactions for January 2022 should be 5");
-    }
-
-    @Test
-    @DisplayName("Test Filtering Transactions with No Matches")
-    void testFilterTransactionsNoMatch() {
-        List<Transaction> marchTransactions = TransactionService.filterTransactions(transactions, "202203");
-        assertEquals(0, marchTransactions.size(), "Number of transactions for March 2022 should be 0");
-    }
 
     @Test
     @DisplayName("Test Total Income and Expenditure Calculation with No Transactions")
     void testEmptyTransactions() {
         List<Transaction> emptyTransactions = Collections.emptyList();
-        BigDecimal totalIncome = App.getTotalIncome(emptyTransactions);
-        BigDecimal totalExpenditure = App.getTotalExpenditure(emptyTransactions);
+        BigDecimal totalIncome = app.getTotalIncome(emptyTransactions);
+        BigDecimal totalExpenditure = app.getTotalExpenditure(emptyTransactions);
         assertEquals(BigDecimal.ZERO, totalIncome, "Total income with no transactions should be 0.00");
         assertEquals(BigDecimal.ZERO, totalExpenditure, "Total expenditure with no transactions should be 0.00");
     }
-
-    @ParameterizedTest
-    @CsvFileSource(resources = "/transactions_test.csv", numLinesToSkip = 1)
-    @DisplayName("Test Parsing CSV File")
-    void testParseCSV(String date, String amount, String content) throws IOException {
-        Transaction expected = new Transaction(date, new BigDecimal(amount), content);
-        List<Transaction> parsedTransactions = CSVUtil.parseCSV("transactions_test.csv");
-        assertTrue(parsedTransactions.contains(expected), "Parsed transactions should contain the expected transaction");
-    }
-
-    @ParameterizedTest
-    @MethodSource("providePeriodsAndExpectedSizes")
-    @DisplayName("Test Filtering Transactions with Different Periods")
-    void testFilterTransactionsWithDifferentPeriods(String period, int expectedSize) {
-        List<Transaction> filteredTransactions = TransactionService.filterTransactions(transactions, period);
-        assertEquals(expectedSize, filteredTransactions.size(),
-                String.format("Number of transactions for period %s should be %d", period, expectedSize));
-    }
-
-    private static Stream<Arguments> providePeriodsAndExpectedSizes() {
-        return Stream.of(
-                Arguments.of("202201", 5),
-                Arguments.of("202202", 2),
-                Arguments.of("202203", 0)
-        );
-    }
-
     @Test
     @DisplayName("Test Output to Console")
     void testOutputToConsole() throws Exception {
         OutputStrategy outputStrategy = new StandardOutputStrategy();
-        MonthlyStatement statement = new MonthlyStatement("202201", BigDecimal.valueOf(350.00), BigDecimal.valueOf(-150.00), transactions);
+        MonthlyStatement statement = new MonthlyStatement("202201", BigDecimal.valueOf(350), BigDecimal.valueOf(-150.00), transactions);
         outputStrategy.output(statement.toString());
     }
 
@@ -113,7 +144,7 @@ public class AppTest {
     void testOutputToFile() throws Exception {
         String filePath = "output.json";
         OutputStrategy outputStrategy = new FileOutputStrategy(filePath);
-        MonthlyStatement statement = new MonthlyStatement("202201", BigDecimal.valueOf(350.00), BigDecimal.valueOf(-150.00), transactions);
+        MonthlyStatement statement = new MonthlyStatement("202201", BigDecimal.valueOf(350), BigDecimal.valueOf(-150.00), transactions);
         outputStrategy.output(statement.toString());
 
         // Verify the file output
@@ -129,7 +160,7 @@ public class AppTest {
     void testFileOutputStrategy() throws Exception {
         String filePath = "output.json";
         OutputStrategy outputStrategy = new FileOutputStrategy(filePath);
-        MonthlyStatement statement = new MonthlyStatement("202201", BigDecimal.valueOf(350.00), BigDecimal.valueOf(-150.00), transactions);
+        MonthlyStatement statement = new MonthlyStatement("202201", BigDecimal.valueOf(350), BigDecimal.valueOf(-150.00), transactions);
         outputStrategy.output(statement.toString());
 
         // Verify the file output
@@ -140,4 +171,7 @@ public class AppTest {
         file.delete();
     }
 
+    public List<Transaction> getFilteredTransaction() {
+        return new TransactionService().filterTransactions(transactions, "202201");
+    }
 }

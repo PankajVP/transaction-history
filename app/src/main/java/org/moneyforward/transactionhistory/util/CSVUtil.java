@@ -1,7 +1,5 @@
 package org.moneyforward.transactionhistory.util;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import org.moneyforward.transactionhistory.model.Transaction;
 
 import java.io.IOException;
@@ -9,12 +7,12 @@ import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
+import java.text.ParseException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CSVUtil {
-    public static List<Transaction> parseCSV(String csvFilePath) throws IOException {
+    public List<Transaction> parseCSV(String csvFilePath) throws IOException {
         List<String> lines;
         try {
             lines = Files.readAllLines(Paths.get(csvFilePath));

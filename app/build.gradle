@@ -18,6 +18,8 @@ repositories {
 dependencies {
     // Use JUnit Jupiter for testing.
     testImplementation libs.junit.jupiter
+    testImplementation 'org.mockito:mockito-core:2.1.0'
+
 
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
@@ -26,6 +28,7 @@ dependencies {
     implementation 'ch.qos.logback:logback-classic:1.2.3'
     implementation 'com.google.code.gson:gson:2.8.8'
     implementation 'org.projectlombok:lombok:1.18.34'
+
     annotationProcessor 'org.projectlombok:lombok:1.18.34'
 }
 
@@ -41,7 +44,17 @@ application {
     mainClass = 'org.moneyforward.transactionhistory.App'
 }
 
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'org.moneyforward.transactionhistory.App'
+        )
+    }
+}
 tasks.named('test') {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
+    jvmArgs '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
+            '--add-opens', 'java.base/java.lang.reflect=ALL-UNNAMED',
+            '--add-opens', 'java.base/java.util=ALL-UNNAMED'
 }
